@@ -16,9 +16,6 @@
 -->
 <resources>
     <string name="app_name">Procrasti-not</string>
-<<<<<<< HEAD
-
-=======
     <string name="not_implemented">Not implemented yet...</string>
     <string name="add_task">New Task</string>
     <string name="edit_task">Edit Task</string>
@@ -72,6 +69,5 @@
     <!-- Content Descriptions -->
     <string name="tasks_header_image_content_description">Tasks header image</string>
     <string name="no_tasks_image_content_description">No tasks image</string>
->>>>>>> 51a64418aa0dba2146e391ac8e208c3b3d6e3787
 
 </resources>
