@@ -20,6 +20,7 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import timber.log.Timber.DebugTree
+import javax.inject.Inject
 
 /**
  * Application that sets up Timber in the DEBUG BuildConfig.
