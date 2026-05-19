@@ -20,11 +20,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+<<<<<<< HEAD
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+=======
+>>>>>>> 51a64418aa0dba2146e391ac8e208c3b3d6e3787
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -34,11 +37,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+<<<<<<< HEAD
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text("Starter Project running as expected")
+=======
+            TodoTheme {
+                TodoNavGraph()
+>>>>>>> 51a64418aa0dba2146e391ac8e208c3b3d6e3787
             }
         }
     }
