@@ -25,10 +25,17 @@ internal fun getActiveAndCompletedStats(tasks: List<Task>?): StatsResult {
     val totalTasks = tasks!!.size
     val numberOfActiveTasks = tasks.count { it.isActive }
     return StatsResult(
-        activeTasksPercent = 100f * (numberOfActiveTasks / tasks.size),
-        completedTasksPercent = 100f * ((totalTasks - numberOfActiveTasks) / tasks.size)
+        activeTasksPercent = if (totalTasks == 0) {
+            0f
+        } else {
+            100f * (numberOfActiveTasks.toFloat() / totalTasks.toFloat())
+        },
+        completedTasksPercent = if (totalTasks == 0) {
+            0f
+        } else {
+            100f * ((totalTasks - numberOfActiveTasks).toFloat() / totalTasks.toFloat())
+        }
     )
 }
 
 data class StatsResult(val activeTasksPercent: Float, val completedTasksPercent: Float)
-

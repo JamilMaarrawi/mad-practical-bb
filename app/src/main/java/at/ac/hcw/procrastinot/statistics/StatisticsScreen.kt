@@ -16,11 +16,14 @@
 
 package at.ac.hcw.procrastinot.statistics
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -29,10 +32,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import at.ac.hcw.procrastinot.R
@@ -91,20 +99,73 @@ private fun StatisticsContent(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = dimensionResource(id = R.dimen.horizontal_margin))
+                .padding(
+                    horizontal = dimensionResource(id = R.dimen.horizontal_margin),
+                    vertical = dimensionResource(id = R.dimen.vertical_margin)
+                ),
+            verticalArrangement = Arrangement.spacedBy(
+                dimensionResource(id = R.dimen.vertical_margin)
+            )
         ) {
             if (!loading) {
-                Text(stringResource(id = R.string.statistics_active_tasks, activeTasksPercent))
-                Text(
-                    stringResource(
-                        id = R.string.statistics_completed_tasks,
-                        completedTasksPercent
-                    )
+                StatisticsCard(
+                    title = stringResource(id = R.string.statistics_active_tasks_label),
+                    percent = activeTasksPercent,
+                    backgroundColor = ActiveTasksColor
+                )
+                StatisticsCard(
+                    title = stringResource(id = R.string.statistics_completed_tasks_label),
+                    percent = completedTasksPercent,
+                    backgroundColor = CompletedTasksColor
                 )
             }
         }
     }
 }
+
+@Composable
+private fun StatisticsCard(
+    title: String,
+    percent: Float,
+    backgroundColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = backgroundColor,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = dimensionResource(id = R.dimen.horizontal_margin),
+                    vertical = dimensionResource(id = R.dimen.vertical_margin)
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = Color.Black,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = stringResource(id = R.string.statistics_percent_format, percent),
+                style = MaterialTheme.typography.headlineSmall,
+                textAlign = TextAlign.Center,
+                color = Color.Black,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+private val ActiveTasksColor = Color(0xFFFFA000)
+private val CompletedTasksColor = Color(0xFF4CAF50)
 
 @Preview
 @Composable
@@ -127,4 +188,3 @@ fun StatisticsContentEmptyPreview() {
         StatisticsScreen({})
     }
 }
-

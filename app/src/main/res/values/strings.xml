@@ -70,4 +70,7 @@
     <string name="tasks_header_image_content_description">Tasks header image</string>
     <string name="no_tasks_image_content_description">No tasks image</string>
 
+    <string name="statistics_active_tasks_label">Active Tasks</string>
+    <string name="statistics_completed_tasks_label">Completed Tasks</string>
+    <string name="statistics_percent_format">%.1f%%</string>
 </resources>
