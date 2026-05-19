@@ -24,6 +24,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,7 +33,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,6 +43,8 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -56,6 +61,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -135,6 +141,7 @@ fun TasksScreen(
             onRefresh = viewModel::refresh,
             onTaskClick = onTaskClick,
             onTaskCheckedChange = viewModel::completeTask,
+            onTaskSwipeToDelete = viewModel::deleteTask,
             modifier = Modifier.padding(paddingValues)
         )
 
@@ -168,6 +175,7 @@ private fun TasksContent(
     onRefresh: () -> Unit,
     onTaskClick: (Task) -> Unit,
     onTaskCheckedChange: (Task, Boolean) -> Unit,
+    onTaskSwipeToDelete: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LoadingContent(
@@ -179,22 +187,22 @@ private fun TasksContent(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(horizontal = dimensionResource(id = R.dimen.horizontal_margin))
         ) {
             Text(
                 text = stringResource(currentFilteringLabel),
                 modifier = Modifier.padding(
-                    horizontal = dimensionResource(id = R.dimen.list_item_padding),
+                    horizontal = dimensionResource(id = R.dimen.horizontal_margin),
                     vertical = dimensionResource(id = R.dimen.vertical_margin)
                 ),
                 style = MaterialTheme.typography.headlineSmall
             )
             LazyColumn {
-                items(tasks) { task ->
-                    TaskItem(
+                items(tasks, key = { it.id }) { task ->
+                    SwipeToDeleteTaskItem(
                         task = task,
                         onTaskClick = onTaskClick,
-                        onCheckedChange = { onTaskCheckedChange(task, it) }
+                        onCheckedChange = { onTaskCheckedChange(task, it) },
+                        onDelete = { onTaskSwipeToDelete(task) }
                     )
                 }
             }
@@ -209,43 +217,48 @@ private fun TaskItem(
     onTaskClick: (Task) -> Unit
 ) {
     val priorityColor = colorResource(id = task.priority.colorRes())
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(priorityColor.copy(alpha = 0.08f))
-            .padding(
-                horizontal = dimensionResource(id = R.dimen.horizontal_margin),
-                vertical = dimensionResource(id = R.dimen.list_item_padding),
-            )
             .clickable { onTaskClick(task) }
     ) {
-        Checkbox(
-            checked = task.isCompleted,
-            onCheckedChange = onCheckedChange
-        )
-        Column(
-            modifier = Modifier.padding(
-                start = dimensionResource(id = R.dimen.horizontal_margin)
-            )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = dimensionResource(id = R.dimen.horizontal_margin),
+                    vertical = dimensionResource(id = R.dimen.list_item_padding),
+                )
         ) {
-            Text(
-                text = task.titleForList,
-                style = MaterialTheme.typography.headlineSmall,
-                textDecoration = if (task.isCompleted) {
-                    TextDecoration.LineThrough
-                } else {
-                    null
-                }
+            Checkbox(
+                checked = task.isCompleted,
+                onCheckedChange = onCheckedChange
             )
-            Text(
-                text = stringResource(
-                    id = R.string.priority_value_format,
-                    stringResource(id = task.priority.labelRes())
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = priorityColor
-            )
+            Column(
+                modifier = Modifier.padding(
+                    start = dimensionResource(id = R.dimen.horizontal_margin)
+                )
+            ) {
+                Text(
+                    text = task.titleForList,
+                    style = MaterialTheme.typography.headlineSmall,
+                    textDecoration = if (task.isCompleted) {
+                        TextDecoration.LineThrough
+                    } else {
+                        null
+                    }
+                )
+                Text(
+                    text = stringResource(
+                        id = R.string.priority_value_format,
+                        stringResource(id = task.priority.labelRes())
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = priorityColor
+                )
+            }
         }
     }
 }
@@ -315,6 +328,7 @@ private fun TasksContentPreview() {
                 onRefresh = { },
                 onTaskClick = { },
                 onTaskCheckedChange = { _, _ -> },
+                onTaskSwipeToDelete = { },
             )
         }
     }
@@ -334,6 +348,7 @@ private fun TasksContentEmptyPreview() {
                 onRefresh = { },
                 onTaskClick = { },
                 onTaskCheckedChange = { _, _ -> },
+                onTaskSwipeToDelete = { },
             )
         }
     }
@@ -389,3 +404,59 @@ private fun TaskItemCompletedPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeToDeleteTaskItem(
+    task: Task,
+    onCheckedChange: (Boolean) -> Unit,
+    onTaskClick: (Task) -> Unit,
+    onDelete: () -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true,
+        backgroundContent = {
+            val isSwipingToDelete = dismissState.targetValue == SwipeToDismissBoxValue.EndToStart
+            val backgroundColor = if (isSwipingToDelete) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+            val iconTint = if (isSwipingToDelete) {
+                MaterialTheme.colorScheme.onError
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(backgroundColor),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = stringResource(id = R.string.menu_delete_task),
+                    tint = iconTint,
+                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.horizontal_margin))
+                )
+            }
+        }
+    ) {
+        TaskItem(
+            task = task,
+            onTaskClick = onTaskClick,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
