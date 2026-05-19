@@ -38,7 +38,7 @@ data class AddEditTaskUiState(
     val title: String = "",
     val description: String = "",
     val isTaskCompleted: Boolean = false,
-    val priority: TaskPriority = TaskPriority.MEDIUM,
+    val priority: TaskPriority = TaskPriority.NONE,
     val isLoading: Boolean = false,
     val userMessage: Int? = null,
     val isTaskSaved: Boolean = false
@@ -156,4 +156,3 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 }
-
