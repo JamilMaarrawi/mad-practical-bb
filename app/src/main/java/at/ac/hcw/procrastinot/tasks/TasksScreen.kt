@@ -42,6 +42,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -57,6 +58,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import at.ac.hcw.procrastinot.R
 import at.ac.hcw.procrastinot.TodoTheme
 import at.ac.hcw.procrastinot.data.Task
@@ -82,6 +86,21 @@ fun TasksScreen(
     viewModel: TasksViewModel = hiltViewModel(),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner, snackbarHostState) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                snackbarHostState.currentSnackbarData?.dismiss()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -132,7 +151,7 @@ fun TasksScreen(
         val currentOnUserMessageDisplayed by rememberUpdatedState(onUserMessageDisplayed)
         LaunchedEffect(userMessage) {
             if (userMessage != 0) {
-                viewModel.showEditResultMessage(userMessage)
+                viewModel.processNavigationMessage(userMessage)
                 currentOnUserMessageDisplayed()
             }
         }

@@ -69,6 +69,7 @@ class TasksViewModel @Inject constructor(
 
     private val _filterUiInfo = _savedFilterType.map { getFilterUiInfo(it) }.distinctUntilChanged()
     private val _userMessage: MutableStateFlow<Int?> = MutableStateFlow(null)
+    private var lastProcessedUserMessage: Int? = null
     private val _isLoading = MutableStateFlow(false)
     private val _filteredTasksAsync =
         combine(taskRepository.getTasksStream(), _savedFilterType) { tasks, type ->
@@ -130,6 +131,14 @@ class TasksViewModel @Inject constructor(
             ADD_EDIT_RESULT_OK -> showSnackbarMessage(R.string.successfully_added_task_message)
             DELETE_RESULT_OK -> showSnackbarMessage(R.string.successfully_deleted_task_message)
         }
+    }
+
+    fun processNavigationMessage(userMessage: Int) {
+        if (userMessage == 0 || userMessage == lastProcessedUserMessage) {
+            return
+        }
+        lastProcessedUserMessage = userMessage
+        showEditResultMessage(userMessage)
     }
 
     fun snackbarMessageShown() {
