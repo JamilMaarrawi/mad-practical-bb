@@ -19,6 +19,7 @@ package at.ac.hcw.procrastinot.data
 import at.ac.hcw.procrastinot.data.source.local.LocalTask
 import at.ac.hcw.procrastinot.data.source.network.NetworkTask
 import at.ac.hcw.procrastinot.data.source.network.TaskStatus
+import at.ac.hcw.procrastinot.data.TaskPriority
 
 /**
  * Data model mapping extension functions. There are three model types:
@@ -40,6 +41,7 @@ fun Task.toLocal() = LocalTask(
     title = title,
     description = description,
     isCompleted = isCompleted,
+    priority = priority.level,
 )
 
 fun List<Task>.toLocal() = map(Task::toLocal)
@@ -50,6 +52,7 @@ fun LocalTask.toExternal() = Task(
     title = title,
     description = description,
     isCompleted = isCompleted,
+    priority = TaskPriority.fromLevel(priority),
 )
 
 // Note: JvmName is used to provide a unique name for each extension function with the same name.
@@ -64,6 +67,7 @@ fun NetworkTask.toLocal() = LocalTask(
     title = title,
     description = shortDescription,
     isCompleted = (status == TaskStatus.COMPLETE),
+    priority = priority ?: TaskPriority.MEDIUM.level,
 )
 
 @JvmName("networkToLocal")
@@ -74,6 +78,7 @@ fun LocalTask.toNetwork() = NetworkTask(
     id = id,
     title = title,
     shortDescription = description,
+    priority = priority,
     status = if (isCompleted) { TaskStatus.COMPLETE } else { TaskStatus.ACTIVE }
 )
 
@@ -90,4 +95,3 @@ fun NetworkTask.toExternal() = toLocal().toExternal()
 
 @JvmName("networkToExternal")
 fun List<NetworkTask>.toExternal() = map(NetworkTask::toExternal)
-

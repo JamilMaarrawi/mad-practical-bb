@@ -19,6 +19,8 @@
 package at.ac.hcw.procrastinot.addedittask
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,7 +30,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -55,7 +60,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import at.ac.hcw.procrastinot.R
+import at.ac.hcw.procrastinot.data.TaskPriority
 import at.ac.hcw.procrastinot.util.AddEditTaskTopAppBar
+import at.ac.hcw.procrastinot.util.labelRes
 
 @Composable
 fun AddEditTaskScreen(
@@ -82,8 +89,10 @@ fun AddEditTaskScreen(
             loading = uiState.isLoading,
             title = uiState.title,
             description = uiState.description,
+            priority = uiState.priority,
             onTitleChanged = viewModel::updateTitle,
             onDescriptionChanged = viewModel::updateDescription,
+            onPriorityChanged = viewModel::updatePriority,
             modifier = Modifier.padding(paddingValues)
         )
 
@@ -110,8 +119,10 @@ private fun AddEditTaskContent(
     loading: Boolean,
     title: String,
     description: String,
+    priority: TaskPriority,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
+    onPriorityChanged: (TaskPriority) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
@@ -150,6 +161,13 @@ private fun AddEditTaskContent(
                 maxLines = 1,
                 colors = textFieldColors
             )
+            PrioritySelector(
+                priority = priority,
+                onPriorityChanged = onPriorityChanged,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+            )
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChanged,
@@ -163,3 +181,47 @@ private fun AddEditTaskContent(
     }
 }
 
+@Composable
+private fun PrioritySelector(
+    priority: TaskPriority,
+    onPriorityChanged: (TaskPriority) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = remember { TaskPriority.entries }
+
+    Box(modifier = modifier) {
+        OutlinedTextField(
+            value = stringResource(id = priority.labelRes()),
+            onValueChange = { },
+            readOnly = true,
+            label = { Text(stringResource(id = R.string.priority_label)) },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = null
+                )
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable { expanded = true }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(id = option.labelRes())) },
+                    onClick = {
+                        onPriorityChanged(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}

@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.ac.hcw.procrastinot.R
 import at.ac.hcw.procrastinot.TodoDestinationsArgs
+import at.ac.hcw.procrastinot.data.TaskPriority
 import at.ac.hcw.procrastinot.data.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +38,7 @@ data class AddEditTaskUiState(
     val title: String = "",
     val description: String = "",
     val isTaskCompleted: Boolean = false,
+    val priority: TaskPriority = TaskPriority.MEDIUM,
     val isLoading: Boolean = false,
     val userMessage: Int? = null,
     val isTaskSaved: Boolean = false
@@ -99,8 +101,14 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
+    fun updatePriority(newPriority: TaskPriority) {
+        _uiState.update {
+            it.copy(priority = newPriority)
+        }
+    }
+
     private fun createNewTask() = viewModelScope.launch {
-        taskRepository.createTask(uiState.value.title, uiState.value.description)
+        taskRepository.createTask(uiState.value.title, uiState.value.description, uiState.value.priority)
         _uiState.update {
             it.copy(isTaskSaved = true)
         }
@@ -115,6 +123,7 @@ class AddEditTaskViewModel @Inject constructor(
                 taskId,
                 title = uiState.value.title,
                 description = uiState.value.description,
+                priority = uiState.value.priority,
             )
             _uiState.update {
                 it.copy(isTaskSaved = true)
@@ -134,6 +143,7 @@ class AddEditTaskViewModel @Inject constructor(
                             title = task.title,
                             description = task.description,
                             isTaskCompleted = task.isCompleted,
+                            priority = task.priority,
                             isLoading = false
                         )
                     }
