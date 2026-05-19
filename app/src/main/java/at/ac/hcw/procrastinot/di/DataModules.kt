@@ -18,8 +18,10 @@ package at.ac.hcw.procrastinot.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.sqlite.db.SupportSQLiteDatabase
 import at.ac.hcw.procrastinot.data.DefaultTaskRepository
 import at.ac.hcw.procrastinot.data.TaskRepository
+import at.ac.hcw.procrastinot.data.seedTasks
 import at.ac.hcw.procrastinot.data.source.local.TaskDao
 import at.ac.hcw.procrastinot.data.source.local.ToDoDatabase
 import at.ac.hcw.procrastinot.data.source.network.NetworkDataSource
@@ -30,6 +32,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import javax.inject.Singleton
 
 @Module
@@ -56,12 +60,24 @@ object DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideDataBase(@ApplicationContext context: Context): ToDoDatabase {
-        return Room.databaseBuilder(
+    fun provideDataBase(
+        @ApplicationContext context: Context,
+        @ApplicationScope scope: CoroutineScope,
+    ): ToDoDatabase {
+        lateinit var database: ToDoDatabase
+        database = Room.databaseBuilder(
             context.applicationContext,
             ToDoDatabase::class.java,
             "Tasks.db"
-        ).build()
+        ).addCallback(object : androidx.room.RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                // Called by Room only when the DB file is created for the first time.
+                // This covers fresh installs and "Clear storage" in device settings.
+                scope.launch { database.taskDao().upsertAll(seedTasks) }
+            }
+        }).build()
+        return database
     }
 
     @Provides
