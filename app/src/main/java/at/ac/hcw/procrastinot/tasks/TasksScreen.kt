@@ -431,7 +431,7 @@ private fun SwipeToDeleteTaskItem(
             val backgroundColor = if (isSwipingToDelete) {
                 MaterialTheme.colorScheme.error
             } else {
-                MaterialTheme.colorScheme.surfaceVariant
+                MaterialTheme.colorScheme.background
             }
             val iconTint = if (isSwipingToDelete) {
                 MaterialTheme.colorScheme.onError
