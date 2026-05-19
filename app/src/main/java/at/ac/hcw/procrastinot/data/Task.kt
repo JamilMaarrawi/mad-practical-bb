@@ -23,6 +23,7 @@ package at.ac.hcw.procrastinot.data
  * @param description description of the task
  * @param isCompleted whether or not this task is completed
  * @param id id of the task
+ * @param priority priority of the task
  *
  * TODO: The constructor of this class should be `internal` but it is used in previews and tests
  *  so that's not possible until those previews/tests are refactored.
@@ -32,6 +33,7 @@ data class Task(
     val description: String = "",
     val isCompleted: Boolean = false,
     val id: String,
+    val priority: TaskPriority = TaskPriority.MEDIUM,
 ) {
 
     val titleForList: String
@@ -43,4 +45,3 @@ data class Task(
     val isEmpty
         get() = title.isEmpty() || description.isEmpty()
 }
-

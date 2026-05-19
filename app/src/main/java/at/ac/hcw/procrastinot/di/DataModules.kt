@@ -76,11 +76,11 @@ object DatabaseModule {
                 // This covers fresh installs and "Clear storage" in device settings.
                 scope.launch { database.taskDao().upsertAll(seedTasks) }
             }
-        }).build()
+        }).addMigrations(ToDoDatabase.MIGRATION_1_2)
+            .build()
         return database
     }
 
     @Provides
     fun provideTaskDao(database: ToDoDatabase): TaskDao = database.taskDao()
 }
-

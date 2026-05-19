@@ -24,10 +24,14 @@ import at.ac.hcw.procrastinot.DELETE_RESULT_OK
 import at.ac.hcw.procrastinot.EDIT_RESULT_OK
 import at.ac.hcw.procrastinot.R
 import at.ac.hcw.procrastinot.data.Task
+import at.ac.hcw.procrastinot.data.TaskPriority
 import at.ac.hcw.procrastinot.data.TaskRepository
 import at.ac.hcw.procrastinot.tasks.TasksFilterType.ACTIVE_TASKS
 import at.ac.hcw.procrastinot.tasks.TasksFilterType.ALL_TASKS
 import at.ac.hcw.procrastinot.tasks.TasksFilterType.COMPLETED_TASKS
+import at.ac.hcw.procrastinot.tasks.TasksFilterType.HIGH_PRIORITY
+import at.ac.hcw.procrastinot.tasks.TasksFilterType.LOW_PRIORITY
+import at.ac.hcw.procrastinot.tasks.TasksFilterType.MEDIUM_PRIORITY
 import at.ac.hcw.procrastinot.util.Async
 import at.ac.hcw.procrastinot.util.WhileUiSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -116,7 +120,7 @@ class TasksViewModel @Inject constructor(
         if (completed) {
             showSnackbarMessage(R.string.task_marked_complete)
         } else {
-            showSnackbarMessage(R.string.not_implemented)
+            showSnackbarMessage(R.string.task_marked_active)
         }
     }
 
@@ -156,6 +160,15 @@ class TasksViewModel @Inject constructor(
                 COMPLETED_TASKS -> if (task.isCompleted) {
                     tasksToShow.add(task)
                 }
+                HIGH_PRIORITY -> if (task.priority == TaskPriority.HIGH) {
+                    tasksToShow.add(task)
+                }
+                MEDIUM_PRIORITY -> if (task.priority == TaskPriority.MEDIUM) {
+                    tasksToShow.add(task)
+                }
+                LOW_PRIORITY -> if (task.priority == TaskPriority.LOW) {
+                    tasksToShow.add(task)
+                }
             }
         }
         return tasksToShow
@@ -181,7 +194,26 @@ class TasksViewModel @Inject constructor(
                     R.drawable.ic_verified_user_96dp
                 )
             }
+            HIGH_PRIORITY -> {
+                FilteringUiInfo(
+                    R.string.label_high_priority, R.string.no_tasks_high_priority,
+                    R.drawable.logo_no_fill
+                )
+            }
+            MEDIUM_PRIORITY -> {
+                FilteringUiInfo(
+                    R.string.label_medium_priority, R.string.no_tasks_medium_priority,
+                    R.drawable.logo_no_fill
+                )
+            }
+            LOW_PRIORITY -> {
+                FilteringUiInfo(
+                    R.string.label_low_priority, R.string.no_tasks_low_priority,
+                    R.drawable.logo_no_fill
+                )
+            }
         }
+
 }
 
 // Used to save the current filtering in SavedStateHandle.
@@ -192,4 +224,3 @@ data class FilteringUiInfo(
     val noTasksLabel: Int = R.string.no_tasks_all,
     val noTaskIconRes: Int = R.drawable.logo_no_fill,
 )
-
